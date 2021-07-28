@@ -62,6 +62,5 @@ class AETrainer():
                     self.writer_autoencoder.add_image("output", output, id, dataformats="NHWC")
 
             self.writer_autoencoder.add_scalar("Loss", np.mean(train_loss), epoch)
-
-        save(ckpt_dir=self.ckpt_dir, model=self.model, optim=self.optim, epoch=epoch)
+            save(ckpt_dir=self.ckpt_dir, model=self.model, optim=self.optim, epoch=epoch)
                 
