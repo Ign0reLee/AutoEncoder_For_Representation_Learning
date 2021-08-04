@@ -21,12 +21,12 @@ parser = argparse.ArgumentParser(description="Auto Encoder Trainer for DAPI imag
 parser.add_argument("--data_dir", "-d", default="../Data/DAPI/GAN_DATA/good_case", type=str, dest="data_dir")                                 
 parser.add_argument("--ckpt_dir", "-c", default="./checkpoint", type=str, dest="ckpt_dir")
 parser.add_argument("--result_dir", "-r", default="./result", type=str, dest="result_dir")
-parser.add_argument("--name", "-n", default="decoder", type=str, dest="result_dir")
+parser.add_argument("--name", "-n", default='auto_encoder', type=str, dest="name")
 
 args = parser.parse_args()
 
 data_dir      = args.data_dir
-ckpt_dir      = os.path.join(args.ckpt_dir, "Decoder")
+ckpt_dir      = os.path.join(args.ckpt_dir, "Auto_Encoder")
 result_dir    = args.result_dir
 
 name          = args.name
@@ -47,13 +47,13 @@ print("==================================\n")
 if __name__ == "__main__":
     
     
-    model = netD(out_channels=3, nker=32).to(device)
+    model = AutoEncoder_De(in_channels=3, out_channels=3, nker=32, norm="bnorm")
     model = load_net(ckpt_dir=ckpt_dir, model=model, name=name)
 
     with torch.no_grad():
         model.eval()
         latent_vector = np.load(os.path.join(result_dir, "Train_Good_DAPI_Latente_Vector.npy"))
-        latent_vector = torch.from_numpy(latent_vector).to(device)
+        latent_vector = torch.from_numpy(latent_vector).to("cuda:1")
         img = model(latent_vector).to("cpu").numpy().transpose(0, 2, 3, 1)
         img = np.clip(img, a_min=0, a_max=1)
         plt.imsave(os.path.join(result_dir, "Representation_DAPI.jpg"), img[0])

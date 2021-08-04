@@ -8,24 +8,31 @@ class netE(nn.Module):
         super(netE, self).__init__()
 
         # Input [B, 1280, 960, 3]
+        # CROP  [B, 768, 768, 3] 
         self.enc1 = CBR2d(in_channels=in_channels, out_channels= 1 * nker, norm=norm)
         self.pool1 = nn.MaxPool2d(kernel_size=2, stride=2)
         # [B, 640, 480, nker]
+        # [B, 384, 384, 3]
         self.enc2 = CBR2d(in_channels=1 * nker, out_channels= 2 * nker, norm=norm)
         self.pool2 = nn.MaxPool2d(kernel_size=2, stride=2)
         # [B, 320, 240, 2 * nker]
+        # [B, 192, 192, 3]
         self.enc3 = CBR2d(in_channels=2 * nker, out_channels= 4 * nker, norm=norm)
         self.pool3 = nn.MaxPool2d(kernel_size=2, stride=2)
         # [B, 160, 120, 4 * nker]
+        # [B, 96, 96, 3]
         self.enc4 = CBR2d(in_channels=4 * nker, out_channels= 8 * nker, norm=norm)
         self.pool4 = nn.MaxPool2d(kernel_size=2, stride=2)
         # [B, 80, 60, 8 * nker]
+        # [B, 48, 48, 3]
         self.enc5 = CBR2d(in_channels=8 * nker, out_channels= 16 * nker, norm=norm)
         self.pool5 = nn.MaxPool2d(kernel_size=2, stride=2)
         # [B, 40, 30, 16 * nker]
+        # [B, 24, 24, 3]
         self.enc6 = CBR2d(in_channels=16 * nker, out_channels= 32 * nker, norm=norm)
         self.pool6 = nn.MaxPool2d(kernel_size=2, stride=2)
         # [B, 20, 15, 32 * nker]
+        # [B, 12, 12, 3]
     
     def forward(self, x):
 
@@ -50,18 +57,25 @@ class netD(nn.Module):
         super(netD, self).__init__()
 
         # [B, 20, 15, 32 * nker]
+        # [B, 12, 12, 3]
         self.dec1 = DECBR2d(in_channels=32 * nker, out_channels= 16 * nker, norm=norm)
         # [B, 40, 30, 16 * nker]
+        # [B, 24, 24, 3]
         self.dec2 = DECBR2d(in_channels=16 * nker, out_channels= 8 * nker, norm=norm)
         # [B, 80, 60, 8 * nker]
+        # [B, 48, 48, 3]
         self.dec3 = DECBR2d(in_channels=8 * nker, out_channels= 4 * nker, norm=norm)
         # [B, 160, 120, 4 * nker]
+        # [B, 96, 96, 3]
         self.dec4 = DECBR2d(in_channels=4 * nker, out_channels= 2 * nker, norm=norm)
         # [B, 320, 240, 2 * nker]
+        # [B, 192, 192, 3]
         self.dec5 = DECBR2d(in_channels=2 * nker, out_channels= 1 * nker, norm=norm)
         # [B, 640, 480, 1 * nker]
+        # [B, 384, 384, 3]
         self.dec6 = DECBR2d(in_channels=1 * nker, out_channels= out_channels, norm=norm, relu=None)
         # [B, 1280, 960, 3]
+        # [B, 786, 786, 3]
     
     def forward(self, x):
         h = self.dec1(x)
@@ -86,5 +100,31 @@ class AutoEncoder(nn.Module):
         latent_vector = self.netE(x)
         output = self.netD(latent_vector.to("cuda:1"))
         return output
+
+
+class AutoEncoder_EN(nn.Module):
+    def __init__(self, in_channels, out_channels, nker=32, norm="bnrom"):
+        super(AutoEncoder_EN, self).__init__()
+
+        self.netE = netE(in_channels=in_channels, nker=nker, norm=norm).to("cuda:0")
+        self.netD = netD(out_channels=out_channels, nker=nker, norm=norm).to("cuda:1")
+    
+    def forward(self, x):
+
+        latent_vector = self.netE(x)
+        return latent_vector
+
+class AutoEncoder_De(nn.Module):
+    def __init__(self, in_channels, out_channels, nker=32, norm="bnrom"):
+        super(AutoEncoder_De, self).__init__()
+
+        self.netE = netE(in_channels=in_channels, nker=nker, norm=norm).to("cuda:0")
+        self.netD = netD(out_channels=out_channels, nker=nker, norm=norm).to("cuda:1")
+    
+    def forward(self, x):
+
+        output = self.netD(x)
+        return output
+
 
         

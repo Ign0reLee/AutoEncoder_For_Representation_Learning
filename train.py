@@ -69,6 +69,8 @@ if not os.path.exists(ckpt_dir):
      os.mkdir(ckpt_dir)
      os.mkdir(os.path.join(ckpt_dir, "Encoder"))
      os.mkdir(os.path.join(ckpt_dir, "Decoder"))
+     os.mkdir(os.path.join(ckpt_dir, "Auto_Encoder"))
+      
 
 
 if __name__ == "__main__":
@@ -76,9 +78,11 @@ if __name__ == "__main__":
     assert os.path.exists(data_dir), f"Please Input Right Data Path! Now path '{data_dir}' is not Exists!"
     transform_train = transforms.Compose([RandomFlip()])
     dataset_train = Dataset(data_dir=os.path.join(data_dir, "train"), transform=transform_train)
-    loader_train = DataLoader(dataset_train, batch_size=batch_size, shuffle=True, num_workers=0)  
+    loader_train = DataLoader(dataset_train, batch_size=batch_size, shuffle=True, num_workers=0) 
+    dataset_valid = Dataset(data_dir=os.path.join(data_dir, "val"), transform=transform_train)
+    loader_valid = DataLoader(dataset_valid, batch_size=batch_size, shuffle=True, num_workers=0)   
     num_data_train = len(dataset_train)
     num_batch_train = np.ceil(num_data_train / batch_size)
 
     AEtrainer = AETrainer(lr=learning_rate, num_batch_train=num_batch_train, ckpt_dir=ckpt_dir, log_dir=log_dir, restart=restart, nker=nker, device=device)
-    AEtrainer.train(loader=loader_train, num_epochs=num_epochs)
+    AEtrainer.train(loader_tr=loader_train,loader_va=loader_valid, num_epochs=num_epochs)
